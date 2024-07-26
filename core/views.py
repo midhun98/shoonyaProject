@@ -1,8 +1,10 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import pagination
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from .filters import RetreatsFilter
 from .models import Retreat
 from .serializers import RetreatSerializer
 
@@ -14,11 +16,12 @@ class CustomPageNumberPagination(pagination.PageNumberPagination):
 
 
 class RetreatViewSet(viewsets.ModelViewSet):
-    queryset = Retreat.objects.all()
+    queryset = Retreat.objects.all().order_by('id')
     pagination_class = CustomPageNumberPagination
     serializer_class = RetreatSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = RetreatsFilter
     search_fields = ['title', 'location', 'description']
     ordering_fields = ['price', 'duration']
 
