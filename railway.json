@@ -9,8 +9,7 @@
             "phases": {
                 "setup": {
                     "nixPkgs": [
-                        "python",
-                        "nodejs"
+                        "python"
                     ]
                 }
             }
