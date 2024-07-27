@@ -1,12 +1,13 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import pagination
 from rest_framework import viewsets, filters
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import RetreatsFilter
-from .models import Retreat
-from .serializers import RetreatSerializer
+from .models import Retreat, Booking
+from .serializers import RetreatSerializer, BookingSerializer
 
 
 class CustomPageNumberPagination(pagination.PageNumberPagination):
@@ -35,3 +36,19 @@ class RetreatViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class BookingViewSet(viewsets.ModelViewSet):
+    queryset = Booking.objects.all()
+    pagination_class = CustomPageNumberPagination
+    serializer_class = BookingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        user_id = request.data.get('user')
+        retreat_id = request.data.get('retreat')
+
+        if Booking.objects.filter(user_id=user_id, retreat_id=retreat_id).exists():
+            return Response({'detail': 'Retreat already booked by this user.'}, status=400)
+
+        return super().create(request, *args, **kwargs)
